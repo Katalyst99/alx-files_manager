@@ -31,6 +31,8 @@ class UsersController {
       id: output.insertedId,
       email,
     });
+  } catch (err) {
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
 
