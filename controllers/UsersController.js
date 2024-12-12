@@ -1,4 +1,4 @@
-import sha1 from 'sha1';
+import crypto from 'crypto';
 import dbClient from '../utils/db';
 
 class UsersController {
@@ -11,20 +11,19 @@ class UsersController {
       if (!password) {
         return res.status(400).json({ error: 'Missing password' });
       }
-      const users = dbClient.db().collection('users');
-      const user = await users.findOne({ email });
+      const user = await dbClient.collection('users').findOne({ email });
       if (user) {
         return res.status(400).json({ error: 'Already exist' });
       }
-      const hashdPwd = sha1(password);
+      const hashdPwd = crypto.createHash('sha1').update(password).digest('hex');
       const newUser = {
         email,
         password: hashdPwd,
       };
-      const output = await users.insertOne(newUser);
+      await dbClient.collection('users').insertOne(newUser);
       return res.status(201).json({
-        id: output.insertedId,
-        email,
+        id: newUser._id,
+        email: newUser.email,
       });
     } catch (err) {
       return res.status(500).json({ error: 'Internal Server Error' });
